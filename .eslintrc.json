@@ -15,9 +15,9 @@
 	},
 
 	"globals": {
-		"android": false,
+		"com": false,
 		"me": false,
-		"com": false
+		"android": false
 	},
 
 	"rules": {

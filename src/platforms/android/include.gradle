@@ -1,0 +1,11 @@
+android {
+	productFlavors {
+		"nativescript-yourplugin" {
+			dimension "nativescript-activity-detection"
+		}
+	}
+}
+
+dependencies {
+	compile 'com.google.android.gms:play-services-location:10.0.+'
+}

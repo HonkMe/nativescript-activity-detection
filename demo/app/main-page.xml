@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+	<Page.actionBar>
+		<ActionBar title="Demo App" icon="" class="action-bar">
+		</ActionBar>
+	</Page.actionBar>
+
+	<FlexboxLayout flexDirection="column">
+		<ListView items="{{ entries }}" id="log" flexGrow="1" class="list-group">
+		</ListView>
+		<FlexboxLayout>
+			<Button class="btn btn-primary" text="Start" tap="start" flexGrow="1"/>
+			<Button class="btn btn-primary" text="Stop" tap="stop" flexGrow="1"/>
+		</FlexboxLayout>
+	</FlexboxLayout>
+
+</Page>

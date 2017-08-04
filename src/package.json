@@ -1,0 +1,24 @@
+{
+  "name": "nativescript-activity-detection",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index",
+  "nativescript": {
+    "platforms": {
+      "android": "2.3.0",
+      "ios": "2.3.0"
+    }
+  },
+  "scripts": {
+    "link": "npm link && cd ../demo && npm link nativescript-activity-detection && cd ../src",
+    "clean": "rm -rf node_modules && cd ../demo && rm -rf hooks node_modules platforms && cd ../src && npm run link",
+    "android": "npm i && cd ../demo && tns run android --syncAllFiles",
+    "ios": "npm i && cd ../demo && tns run ios --syncAllFiles"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nativescript-android-utils": "^1.0.2",
+    "nativescript-theme-core": "^1.0.4"
+  }
+}
