@@ -20,7 +20,7 @@ const ACTIVITY_TYPE = {
 
 var instance;
 
-com.pip3r4o.android.app.IntentService.extend("me.surdu.ActivityReconIntentService", {
+com.pip3r4o.android.app.IntentService.extend("me.surdu.ActivityIntentService", {
 	onHandleIntent: function (intent) {
 		if (instance) {
 			if (ActivityRecognitionResult.hasResult(intent)) {
@@ -47,40 +47,50 @@ class ActivityDetection extends ActivityDetectionBase {
 		super();
 		this.context = application.android.context;
 
-		var intent = new android.content.Intent(this.context, me.surdu.ActivityReconIntentService.class);
+		var intent = new android.content.Intent(this.context, me.surdu.ActivityIntentService.class);
 		this.activityReconPendingIntent = android.app.PendingIntent.getService(this.context, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT);
-
 	}
 
-	start(context) {
-		if (context) {
-			this.context = context;
-		}
+	connectToGooleAPI() {
+		return new Promise(function (resolve, reject) {
+			let api = new GoogleApiClient.Builder(this.context)
+			.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks({
+				onConnected: function () {
+					resolve(api);
+				}
+			}))
+			.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener({
+				onConnectionFailed: function() {
+					reject(new Error("Google API connection failed"));
+				}
+			}))
+			.addApi(ActivityRecognition.API)
+			.build();
 
-		this.apiClient = new GoogleApiClient.Builder(this.context)
-		.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks({
-			onConnected: this.onConnected.bind(this),
-			onConnectionSuspended: function() {
-				console.error("Activity Detection: Connection SUSPENDED");
-			}.bind(this)
-		}))
-		.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener({
-			onConnectionFailed: function() {
-				console.error("Activity Detection: Connection FAILED");
-			}.bind(this)
-		}))
-		.addApi(ActivityRecognition.API)
-		.build();
+			api.connect();
+		}.bind(this));
+	}
 
-		this.apiClient.connect();
+	start() {
+		this.connectToGooleAPI()
+		.then(function (api) {
+			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(api, 0, this.activityReconPendingIntent);
+			api.disconnect();
+		}.bind(this))
+		.catch(function (err) {
+			console.error(err.stack);
+		});
 	}
 
 	stop() {
-		ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(this.apiClient, this.activityReconPendingIntent);
-	}
-
-	onConnected() {
-		ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(this.apiClient, 0, this.activityReconPendingIntent);
+		this.connectToGooleAPI()
+		.then(function (api) {
+			ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(api, this.activityReconPendingIntent);
+			api.disconnect();
+		}.bind(this))
+		.catch(function (err) {
+			console.error(err.stack);
+		});
 	}
 }
 
