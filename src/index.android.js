@@ -49,48 +49,46 @@ class ActivityDetection extends ActivityDetectionBase {
 
 		var intent = new android.content.Intent(this.context, me.surdu.ActivityIntentService.class);
 		this.activityReconPendingIntent = android.app.PendingIntent.getService(this.context, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT);
+
 	}
 
-	connectToGooleAPI() {
-		return new Promise(function (resolve, reject) {
-			let api = new GoogleApiClient.Builder(this.context)
-			.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks({
-				onConnected: function () {
-					resolve(api);
-				}
-			}))
-			.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener({
-				onConnectionFailed: function() {
-					reject(new Error("Google API connection failed"));
-				}
-			}))
-			.addApi(ActivityRecognition.API)
-			.build();
+	start(context) {
+		if (context) {
+			this.context = context;
+		}
 
-			api.connect();
-		}.bind(this));
-	}
+		this.apiClient = new GoogleApiClient.Builder(this.context)
+		.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks({
+			onConnected: this.onConnected.bind(this),
+			onConnectionSuspended: function() {
+				console.error("Activity Detection: Connection SUSPENDED");
+			}.bind(this)
+		}))
+		.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener({
+			onConnectionFailed: function() {
+				console.error("Activity Detection: Connection FAILED");
+			}.bind(this)
+		}))
+		.addApi(ActivityRecognition.API)
+		.build();
 
-	start() {
-		this.connectToGooleAPI()
-		.then(function (api) {
-			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(api, 0, this.activityReconPendingIntent);
-			api.disconnect();
-		}.bind(this))
-		.catch(function (err) {
-			console.error(err.stack);
-		});
+    if (this.apiClient) {
+
+      this.apiClient.connect();
+    }
 	}
 
 	stop() {
-		this.connectToGooleAPI()
-		.then(function (api) {
-			ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(api, this.activityReconPendingIntent);
-			api.disconnect();
-		}.bind(this))
-		.catch(function (err) {
-			console.error(err.stack);
-		});
+    if (this.apiClient && ActivityRecognition && ActivityRecognition.ActivityRecognitionApi) {
+      ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(this.apiClient, this.activityReconPendingIntent);
+
+    }
+	}
+
+	onConnected() {
+    if (this.apiClient && ActivityRecognition && ActivityRecognition.ActivityRecognitionApi) {
+      ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(this.apiClient, 0, this.activityReconPendingIntent);
+    }
 	}
 }
 

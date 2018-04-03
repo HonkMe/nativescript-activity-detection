@@ -8,22 +8,28 @@
     "platforms": {
       "android": "2.3.0",
       "ios": "2.3.0"
+
     }
+
   },
   "scripts": {
     "link": "npm link && cd ../demo && npm link nativescript-activity-detection && cd ../src",
     "clean": "rm -rf node_modules && npm i && cd ../demo && rm -rf hooks node_modules platforms && npm i && cd ../src && npm run link",
     "android": "cd ../demo && tns run android --syncAllFiles",
     "ios": "cd ../demo && tns run ios --syncAllFiles"
+
   },
   "author": "Nicolae Surdu",
   "license": "MIT",
   "dependencies": {
     "nativescript-android-utils": "^1.0.2",
     "nativescript-theme-core": "^1.0.4"
+
   },
   "devDependencies": {
     "eslint": "^4.4.0",
     "eslint-plugin-promise": "^3.5.0"
+
   }
+
 }
