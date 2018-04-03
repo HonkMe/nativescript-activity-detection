@@ -35,9 +35,9 @@ class ActivityDetection extends ActivityDetectionBase {
 	}
 
 	stop() {
-		if (!this.activityManager) {
-			return;
-		}
+    if (!this.activityManager) {
+      return;
+    }
 		this.activityManager.stopActivityUpdates();
 	}
 }
