@@ -12,5 +12,4 @@
 			<Button class="btn btn-primary" text="Stop" tap="stop" flexGrow="1"/>
 		</FlexboxLayout>
 	</FlexboxLayout>
-
 </Page>

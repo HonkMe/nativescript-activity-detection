@@ -1,9 +1,5 @@
 android {
-	productFlavors {
-		"nativescript-yourplugin" {
-			dimension "nativescript-activity-detection"
-		}
-	}
+	
 }
 
 dependencies {

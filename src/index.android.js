@@ -4,6 +4,7 @@ const GoogleApiClient = com.google.android.gms.common.api.GoogleApiClient;
 const ActivityRecognition = com.google.android.gms.location.ActivityRecognition;
 const ActivityRecognitionResult = com.google.android.gms.location.ActivityRecognitionResult;
 const DetectedActivity = com.google.android.gms.location.DetectedActivity;
+const PendingIntent = android.app.PendingIntent;
 
 const {ActivityDetectionBase, activityEvent} = require("./index.common");
 
@@ -23,21 +24,8 @@ var instance;
 com.pip3r4o.android.app.IntentService.extend("me.surdu.ActivityIntentService", {
 	onHandleIntent: function (intent) {
 		if (instance) {
-			if (ActivityRecognitionResult.hasResult(intent)) {
-				var result = ActivityRecognitionResult.extractResult(intent);
-				var activity = result.getMostProbableActivity();
-				var activityType = activity.getType();
-
-				// var list = result.getProbableActivities();
-				// for (let f = 0; f < list.size(); f++) {
-				// 	let activity = list.get(f);
-				// 	let activityType = activity.getType();
-				// 	instance.notifyActivity(activityType, activity.getConfidence());
-				// }
-				// instance.notifyActivity(ACTIVITY_TYPE.UNKNOWN, 99.9);
-
-				instance.notifyActivity(activityType, activity.getConfidence());
-			}
+			const activity = instance.extractActivity(intent);
+			instance.notifyActivity(activity.type, activity.confidence);
 		}
 	}
 });
@@ -47,13 +35,43 @@ class ActivityDetection extends ActivityDetectionBase {
 		super();
 		this.context = application.android.context;
 
-		var intent = new android.content.Intent(this.context, me.surdu.ActivityIntentService.class);
-		this.activityReconPendingIntent = android.app.PendingIntent.getService(this.context, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT);
+		const intent = new android.content.Intent(this.context, me.surdu.ActivityIntentService.class);
+		this.activityIntent = PendingIntent.getService(this.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+
+	static getInstance() {
+		if (!instance) {
+			instance = new ActivityDetection();
+		}
+
+		return instance;
+	}
+
+	static extractActivity(intent) {
+		const androidActivity = ActivityRecognitionResult.extractResult(intent);
+		if (!androidActivity) {
+			return;
+		}
+
+		const activity = androidActivity.getMostProbableActivity();
+
+		// var list = androidActivity.getProbableActivities();
+		// for (let f = 0; f < list.size(); f++) {
+		// 	let activity = list.get(f);
+		// 	let activityType = activity.getType();
+		// 	instance.notifyActivity(activityType, activity.getConfidence());
+		// }
+		// instance.notifyActivity(ACTIVITY_TYPE.UNKNOWN, 99.9);
+
+		return {
+			type: activity.getType(),
+			confidence: activity.getConfidence()
+		};
 	}
 
 	connectToGooleAPI() {
 		return new Promise(function (resolve, reject) {
-			let api = new GoogleApiClient.Builder(this.context)
+			const api = new GoogleApiClient.Builder(this.context)
 			.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks({
 				onConnected: function () {
 					resolve(api);
@@ -71,10 +89,15 @@ class ActivityDetection extends ActivityDetectionBase {
 		}.bind(this));
 	}
 
+	setHandler(className) {
+		const intent = new android.content.Intent(this.context, className.class);
+		this.activityIntent = PendingIntent.getService(this.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+
 	start() {
 		this.connectToGooleAPI()
 		.then(function (api) {
-			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(api, 0, this.activityReconPendingIntent);
+			ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(api, 0, this.activityIntent);
 			api.disconnect();
 		}.bind(this))
 		.catch(function (err) {
@@ -85,7 +108,7 @@ class ActivityDetection extends ActivityDetectionBase {
 	stop() {
 		this.connectToGooleAPI()
 		.then(function (api) {
-			ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(api, this.activityReconPendingIntent);
+			ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(api, this.activityIntent);
 			api.disconnect();
 		}.bind(this))
 		.catch(function (err) {
@@ -94,15 +117,18 @@ class ActivityDetection extends ActivityDetectionBase {
 	}
 }
 
-module.exports = {
-	getInstance: function () {
-		if (!instance) {
-			instance = new ActivityDetection();
-		}
+Object.defineProperty(ActivityDetection, 'TYPE', {
+	enumerable: true,
+	configurable: false,
+	writable: false,
+	value: ACTIVITY_TYPE
+});
 
-		return instance;
-	},
+Object.defineProperty(ActivityDetection, 'activityEvent', {
+	enumerable: true,
+	configurable: false,
+	writable: false,
+	value: activityEvent
+});
 
-	TYPE: ACTIVITY_TYPE,
-	activityEvent: activityEvent,
-};
+module.exports = ActivityDetection;

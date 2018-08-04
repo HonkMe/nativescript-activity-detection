@@ -13,12 +13,19 @@ function onNavigatingTo(args) {
 	listView = page.getViewById("log");
 	page.bindingContext = viewModel;
 
-	activityDetection.on(ActivityDetection.activityEvent, function (eventData) {
-		var activityName = getActivityName(eventData.activity.type);
-		var activityConfidence = eventData.activity.confidence;
+	activityDetection.on(ActivityDetection.activityEvent, handleActivity);
+}
 
+function handleActivity(eventData) {
+	var activityName = getActivityName(eventData.activity.type);
+	var activityConfidence = eventData.activity.confidence;
+
+	if (activityConfidence === 99.9) {
+		addEntry("---");
+	}
+	else {
 		addEntry(`${activityName}; Confidence: ${activityConfidence}%`);
-	});
+	}
 }
 
 function addEntry(text) {
