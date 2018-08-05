@@ -20,16 +20,11 @@
 		"android": false
 	},
 
-	"plugins": [
-		"promise"
-	],
-
 	"rules": {
 		"eqeqeq": "error",
 		"block-scoped-var": "error",
 		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
 		"semi": "error",
-		"no-console": ["error", {"allow": ["error"]}],
-		"promise/catch-or-return": "error"
+		"no-console": ["error", {"allow": ["error"]}]
 	}
 }
