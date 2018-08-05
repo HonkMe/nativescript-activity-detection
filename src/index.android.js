@@ -117,7 +117,7 @@ class ActivityDetection extends ActivityDetectionBase {
 	}
 }
 
-Object.defineProperty(ActivityDetection, 'TYPE', {
+Object.defineProperty(ActivityDetection, 'ACTIVITY_TYPE', {
 	enumerable: true,
 	configurable: false,
 	writable: false,
